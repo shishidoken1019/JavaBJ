@@ -5,12 +5,28 @@ import java.util.Collections;
 
 public class Player {
 
+	/**
+	 * 持っているカードの配列
+	 */
 	private ArrayList<String> player_card = new ArrayList<String>();
+	/**
+	 * 現在のもち金
+	 */
 	private int player_money = 1000;
+	/**
+	 * カードの合計値
+	 */
 	private int player_sum_card = 0;
+	/**
+	 * プレイヤーの状態
+	 */
 	private String player_state = "hit";
 	
-	//カードを手札に一枚追加
+	/**
+	 * カードを手札に一枚追加
+	 * @param now_use_tramp(山のトランプ)
+	 * @return　山のトランプ
+	 */
 	public ArrayList<String> hit(ArrayList<String> now_use_tramp){
 		//手札に追加
 		this.player_card.add(now_use_tramp.get(0));
@@ -22,12 +38,15 @@ public class Player {
 		return now_use_tramp;
 	}
 	
-	//プレイヤーの現在のカードの合計を計算
+	/**
+	 * プレイヤーの現在のカードの合計を計算
+	 */
 	public void count_card_sum(){
 	
 		//
 		ArrayList<String> only_card_number_arr = new ArrayList<String>();
 		String[] card_element;
+		
 		//数字だけの配列に変換
 		for(String val:this.player_card){
 			card_element = (val.split(":"));
@@ -39,11 +58,10 @@ public class Player {
 		//まずは降順に並び替え
 		Collections.sort(only_card_number_arr);
 		Collections.reverse(only_card_number_arr);
-		
 		//まわす
 		for(int i =0;i < only_card_number_arr.size();i++){
 			
-			//1(エース)が出るまではカードのスコアにより加点、1が出た場合は$sumの値により1か11でカウントするかを決定
+			//1(エース)が出るまではカードのスコアにより加点、1が出た場合はsumの値により1か11でカウントするかを決定
 			if(Integer.parseInt(only_card_number_arr.get(i)) >= 10){
 				 sum += 10;
 			
@@ -67,13 +85,18 @@ public class Player {
 		this.player_sum_card = sum;
 	}
 	
-	//親の行動
+	/**
+	 * 親の行動
+	 * @param now_use_tramp(山のトランプ)
+	 * @return 山のトランプ
+	 */
 	public ArrayList<String> parent_act(ArrayList<String> now_use_tramp){
 	
 		//親のカードが15以下だった場合、親はヒットする(条件は(仮))
 		if(this.player_sum_card > 15){
 			this.player_state = "stand";
 		}else{
+			//ヒット
 			now_use_tramp = this.hit(now_use_tramp);
 			//ヒットしたので、もう一度状態を確認
 			if(this.player_sum_card > 15){

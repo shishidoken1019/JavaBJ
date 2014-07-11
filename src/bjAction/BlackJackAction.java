@@ -14,19 +14,16 @@ import bjAction.Player;
 import bjAction.AbstractAction;
 
 @Results({
-	@Result(name = "errorPage", value = "errorPage.action", type = ServletRedirectResult.class),
-	@Result(name = "blackJack", value = "blackJack.action", type = ServletRedirectResult.class),
-	@Result(name = "poker", value = "poker.action", type = ServletRedirectResult.class)})
-
+	@Result(name = "errorPage", value = "errorPage.action", type = ServletRedirectResult.class)})
 
 public class BlackJackAction extends AbstractAction {
 	
 	/**
-	 * 親の情報が入ったbean
+	 * 親のカード情報
 	 */
 	private ArrayList<String> parent_card;
 	/**
-	 * プレイヤーの情報が入ったbean
+	 * プレイヤーのカード情報
 	 */
 	private ArrayList<String> player_card;
 	/**
@@ -34,7 +31,7 @@ public class BlackJackAction extends AbstractAction {
 	 */
 	private String game_name = "";
 	/**
-	 * 結果
+	 * 結果コメント
 	 */
 	String result ="";
 	/**
@@ -46,14 +43,10 @@ public class BlackJackAction extends AbstractAction {
 	 */
 	int player_sum_card = 0;
 
-	
-	//シリアライズ
 	private static final long serialVersionUID = 1L;
-	
+
+	//初期アクセス時の処理
 	public String execute() throws Exception {
-		// ID、パスワード共にセッション値が残っていた場合は初期値に入れる
-		System.out.print("BlackJackAction");
-		
 		
 		//ゲームをリロードしようとしたらエラー
 		if(sessionMap.get("parent") != null){
@@ -62,12 +55,13 @@ public class BlackJackAction extends AbstractAction {
 			//エラーページに飛ぶ
 			return "errorPage";
 		}
-		
-		
-		//親のインスタンスを作る
+				
+		//対戦相手を作る
 		Player parent = new Player();
+		
 		//プレイヤーのインスタンスをセッション情報から持ってくる
 		Player player = (Player)sessionMap.get("player");
+		
 		//継続してゲームの場合、プレイヤーのカードを初期化
 		if(player.getPlayer_card() != null){
 			player.setPlayer_card(new ArrayList<String>());
@@ -123,27 +117,16 @@ public class BlackJackAction extends AbstractAction {
 		now_use_tramp = player.hit(now_use_tramp);
 
 		//セッションに情報を格納
-		sessionMap.put("now_use_tramp",now_use_tramp);
-		sessionMap.put("parent",parent);
-		sessionMap.put("player",player);
-		
-		Utility utility = new Utility();
+		this.session_common(now_use_tramp, parent, player);
 		
 		//もしプレイヤーのカードが21を超えていたら勝負
 		if(player.getPlayer_sum_card() > 21){
 			//
-			String re = utility.result(player, parent);
-			this.setResult(re);
-			this.setPlayer_sum_card(player.getPlayer_sum_card());
-			this.setParent_sum_card(parent.getPlayer_sum_card());		
-			
-			sessionMap.put("parent", null);
+			this.fight(player, parent);
 		}
 		
-		//表示側に渡す
-		this.setGame_name((String)sessionMap.get("game_name"));
-		this.setParent_card(card.display_card(parent.getPlayer_card()));
-		this.setPlayer_card(card.display_card(player.getPlayer_card()));
+		//共通部分を表示側に渡す
+		this.common_disp(card, parent, player);
 		
 		return "success";
 		
@@ -151,11 +134,8 @@ public class BlackJackAction extends AbstractAction {
 	
 	//スタンドを押されたとき
 	public String stand(){
-		System.out.println("stand内");
-		
 		//
 		Card card = new Card();
-		
 		//ゲームをリロードしようとしたらエラー
 		if(sessionMap.get("parent") == null){
 			//エラーページに飛ぶ
@@ -169,36 +149,62 @@ public class BlackJackAction extends AbstractAction {
 		
 		//親が行動
 		now_use_tramp = parent.parent_act(now_use_tramp);
+		
 		//ヒットしたのでプレイヤーは手札にカードを追加
 		player.setPlayer_state("stand");;
 
 		//セッションに情報を格納
-		sessionMap.put("now_use_tramp",now_use_tramp);
-		sessionMap.put("parent",parent);
-		sessionMap.put("player",player);
-		
-		Utility utility = new Utility();
+		this.session_common(now_use_tramp, parent, player);		
 		
 		//もしプレイヤーのカードが21を超えていたら勝負
 		if(parent.getPlayer_state() == "stand"){
 			//
-			String re = utility.result(player, parent);
-			this.setResult(re);
-			this.setPlayer_sum_card(player.getPlayer_sum_card());
-			this.setParent_sum_card(parent.getPlayer_sum_card());
-			
-			sessionMap.put("parent", null);
+			this.fight(player, parent);
 		}
 		
-		//表示側に渡す
-		this.setGame_name((String)sessionMap.get("gameName"));
-		this.setParent_card(card.display_card(parent.getPlayer_card()));
-		this.setPlayer_card(card.display_card(player.getPlayer_card()));
+		//共通部分を表示側に渡す
+		this.common_disp(card, parent, player);
 		
 		return "success";		
 	}
 
-
+	/**
+	 * 共通でセッションに情報を格納するもの
+	 */
+	public void session_common(ArrayList<String> now_use_tramp,Player parent,Player player){
+		sessionMap.put("now_use_tramp",now_use_tramp);
+		sessionMap.put("parent",parent);
+		sessionMap.put("player",player);
+	}
+	/**
+	 * 共通で表示側に渡すものを渡す
+	 * @param card
+	 * @param parent
+	 * @param player
+	 */
+	public void common_disp(Card card,Player parent,Player player){
+		//表示側に渡す
+		this.setGame_name((String)sessionMap.get("game_name"));
+		this.setParent_card(card.display_card(parent.getPlayer_card()));
+		this.setPlayer_card(card.display_card(player.getPlayer_card()));
+		
+	}
+	
+	/**
+	 *  勝負した場合の処理
+	 * @param player
+	 * @param parent
+	 */
+	public void fight(Player player,Player parent){
+		
+		Utility utility = new Utility();
+		String re = utility.result(player, parent);
+		this.setResult(re);
+		this.setPlayer_sum_card(player.getPlayer_sum_card());
+		this.setParent_sum_card(parent.getPlayer_sum_card());
+		
+		sessionMap.put("parent", null);
+	}
 	
 	/**
 	 * @return parent_card

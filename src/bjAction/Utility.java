@@ -3,7 +3,12 @@ package bjAction;
 import bjAction.Player;
 
 public class Utility {
-	// ブラックジャックで結果を出す処理
+	/**
+	 *  ブラックジャックで結果を出す処理
+	 * @param player（プレイヤー）
+	 * @param parent（親）
+	 * @return 結果コメント
+	 */
 	public String result(Player player, Player parent) {
 
 		String result = "";

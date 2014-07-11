@@ -19,8 +19,6 @@ public class IndexAction extends AbstractAction {
 	private static final long serialVersionUID = 1L;
 	
 	public String execute() throws Exception {
-		//
-		System.out.print("a"+sessionMap.get("Name")+"b");
 
 		//ゲームの開始時にプレイヤーのインスタンスを作る
 		Player player = new Player();
@@ -33,19 +31,15 @@ public class IndexAction extends AbstractAction {
 		return "success";
 	}
 	
+	//ブラックジャックを押されたら
 	public String blackJack() throws Exception {
-		//
-		System.out.print("ブラックジャックメソッド");
 
-		// 
 		return "blackJack";
 	}
 	
+	//ポーカーを押されたら
 	public String poker() throws Exception {
-		// ID、パスワード共にセッション値が残っていた場合は初期値に入れる
-		System.out.print("ポーカーメソッド");
 
-		// ログイン画面を表示
 		return "poker";
 	}
 
